@@ -4,7 +4,7 @@
 
 // VISUAL OUTPUT CONFIG
 #define LED_SERIAL_PIN 6 // D2
-#define MAX_BRIGHTNESS 20 // 0-255
+#define MAX_BRIGHTNESS 80 // 0-255
 #define LED_STRIP_SIZE 150 // number of LEDs on the strip
 #define LED_STRIP_OFFSET 50
 
@@ -52,7 +52,9 @@ void loop() {
     status = currentStatus;
   } 
   else if (!currentStatus) {
-    clearStrip();
+    if (status != currentStatus) {
+      clearStrip();
+    }
     rainbowCycle(10);
     status = currentStatus;
   }
@@ -71,8 +73,8 @@ int ledIndexOffset (int currentIndex, int offset = 0) {
 
 void clearStrip() {
   for(int i=0; i< strip.numPixels()/2; i++) {
-      strip.setPixelColor(ledIndexOffset(i, LED_STRIP_OFFSET), Wheel(((i * 256 / strip.numPixels())) & 255));
-      strip.setPixelColor(ledIndexOffset(strip.numPixels() - i - 1, LED_STRIP_OFFSET), Wheel(((i * 256 / strip.numPixels())) & 255));
+      strip.setPixelColor(ledIndexOffset(i, LED_STRIP_OFFSET), Wheel(((i * MAX_BRIGHTNESS / strip.numPixels())) & 255));
+      strip.setPixelColor(ledIndexOffset(strip.numPixels() - i - 1, LED_STRIP_OFFSET), Wheel(((i * MAX_BRIGHTNESS / strip.numPixels())) & 255));
       strip.show();
       delay(5);
     }
@@ -81,7 +83,7 @@ void clearStrip() {
 void fillStrip() {
   //uint32_t color = strip.Color(22, 6, 24); // red
   //uint32_t color = strip.Color(132, 0, 0); // purple
-  uint32_t color = strip.Color(150, 150, 150);
+  uint32_t color = strip.Color(MAX_BRIGHTNESS, MAX_BRIGHTNESS, MAX_BRIGHTNESS);
   for(uint16_t i=strip.numPixels()/2; i>0; i--) {
     strip.setPixelColor(ledIndexOffset(i-1, LED_STRIP_OFFSET), color);
     strip.setPixelColor(ledIndexOffset(strip.numPixels() - i, LED_STRIP_OFFSET), color);
@@ -96,7 +98,7 @@ void rainbowCycle(uint8_t wait) {
 
   for(j=0; j<256; j++) {
     for(i=0; i< strip.numPixels(); i++) {
-      strip.setPixelColor(i, Wheel(((i * 256 / strip.numPixels()) + j) & 255));
+      strip.setPixelColor(ledIndexOffset(i, LED_STRIP_OFFSET), Wheel(((i * 256 / strip.numPixels()) + j) & 255));
     }
     strip.show();
     if (digitalRead(SIGNAL_PIN) != status) {
@@ -112,9 +114,8 @@ uint32_t Wheel(byte WheelPos) {
   float blue =  WheelPos / DIV;
 
   if(WheelPos < 128) {
-    return strip.Color(255, 0, blue);
+    return strip.Color(MAX_BRIGHTNESS, 0, blue);
   }
-  WheelPos -= 128;
-  return strip.Color(255, 0, 255 / DIV - blue);
+  return strip.Color(MAX_BRIGHTNESS, 0, 255 / DIV - blue);
 }
 
